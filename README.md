@@ -1,10 +1,10 @@
-# KanbanCP
+# Kanban-Competitive-Programming
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/7dc02b7b-fa94-4418-ad89-952b5d942ced" alt="KanbanCP preview" width="100%" />
 </p>
 
-KanbanCP is a local-first desktop app for organizing competitive programming practice with kanban boards, solution notes, AI review, and optional GitHub sync.
+Kanban-Competitive-Programming is a local-first desktop app for organizing competitive programming practice with kanban boards, solution notes, AI review, and optional GitHub sync.
 
 Designed for daily problem solving workflows: collect problems, move them through practice stages, write solutions, review attempts, and keep everything stored locally on your machine.
 
@@ -82,8 +82,8 @@ Deleting a board also deletes its local problems. Deleting a problem removes its
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/ScrKiddie/KanbanCP.git
-cd KanbanCP
+git clone https://github.com/Hilmi-Raif/Kanban-Competitive-Programming.git
+cd Kanban-Competitive-Programming
 ```
 
 2. Install dependencies:
