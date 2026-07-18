@@ -13,6 +13,7 @@
     "windows": [
       {
         "title": "KanbanCP",
+        "visible": false,
         "width": 1280,
         "height": 800,
         "minWidth": 960,
@@ -26,12 +27,24 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "publisher": "KanbanCP",
+    "category": "DeveloperTool",
+    "shortDescription": "Competitive programming kanban board",
+    "longDescription": "KanbanCP is a desktop kanban workspace for organizing competitive programming problems, reviews, tags, and local progress.",
+    "copyright": "Copyright (c) 2026 KanbanCP",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "installMode": "currentUser"
+      }
+    }
   }
 }

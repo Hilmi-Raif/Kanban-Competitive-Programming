@@ -141,8 +141,20 @@ The desktop app version is configured in:
 src-tauri/tauri.conf.json
 ```
 
-Build a release bundle locally with:
+Build platform-specific release bundles with:
 
 ```bash
 pnpm tauri build
+```
+
+Generated bundles are written under:
+
+```text
+src-tauri/target/release/bundle/
+```
+
+Installer metadata and bundle icons are configured in:
+
+```text
+src-tauri/tauri.conf.json
 ```
