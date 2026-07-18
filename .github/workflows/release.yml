@@ -31,13 +31,17 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF_NAME}"
-            BODY="Automated Tauri release build for ${TAG}."
+            GENERATE_NOTES="true"
           else
             TAG="v${VERSION}"
             BODY="Manual Tauri release build for ${TAG}."
+            GENERATE_NOTES="false"
           fi
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "body=${BODY}" >> "$GITHUB_OUTPUT"
+          echo "generate_notes=${GENERATE_NOTES}" >> "$GITHUB_OUTPUT"
+          if [[ -n "${BODY:-}" ]]; then
+            echo "body=${BODY}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Create or find release
         id: release
@@ -45,11 +49,13 @@ jobs:
         env:
           RELEASE_TAG: ${{ steps.metadata.outputs.tag }}
           RELEASE_BODY: ${{ steps.metadata.outputs.body }}
+          GENERATE_RELEASE_NOTES: ${{ steps.metadata.outputs.generate_notes }}
         with:
           script: |
             const { owner, repo } = context.repo;
             const tag = process.env.RELEASE_TAG;
             const body = process.env.RELEASE_BODY;
+            const generateReleaseNotes = process.env.GENERATE_RELEASE_NOTES === 'true';
 
             try {
               const release = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
@@ -67,6 +73,7 @@ jobs:
               tag_name: tag,
               name: tag,
               body,
+              generate_release_notes: generateReleaseNotes,
               draft: false,
               prerelease: false,
             });

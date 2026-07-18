@@ -125,6 +125,16 @@ function normalizeAiBaseUrl(settings: AppSettings) {
   return baseUrl.replace(/\/$/, "");
 }
 
+async function readApiError(response: Response, fallback: string) {
+  try {
+    const payload = await response.json() as { message?: string; error?: { message?: string } | string };
+    if (typeof payload.error === "string") return payload.error;
+    return payload.error?.message || payload.message || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export const api = {
   auth: {
     me: async (): Promise<AuthResponse> => ({ user: { id: "local", username: "Local User" } }),
@@ -349,6 +359,39 @@ export const api = {
     },
   },
   ai: {
+    check: async (settings: AppSettings): Promise<{ model: string }> => {
+      if (!settings.aiApiKey.trim()) {
+        throw new Error("Enter your BYOK AI API key first.");
+      }
+      if (!settings.aiBaseUrl.trim()) {
+        throw new Error("Enter your BYOK AI base URL first.");
+      }
+      if (!settings.aiModel.trim()) {
+        throw new Error("Enter your BYOK AI model first.");
+      }
+
+      const model = settings.aiModel.trim();
+      const response = await fetch(`${normalizeAiBaseUrl(settings)}/chat/completions`, {
+        method: "POST",
+        headers: providerHeaders(settings),
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: "Reply with only: OK" }],
+          temperature: 0,
+          max_tokens: 8,
+        }),
+      });
+
+      if (!response.ok) {
+        const details = await readApiError(response, response.statusText || "Unknown error");
+        throw new Error(`AI API error (${response.status}): ${details}`);
+      }
+
+      const payload = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+      const content = payload.choices?.[0]?.message?.content;
+      if (!content) throw new Error("AI provider returned an empty response.");
+      return { model };
+    },
     review: async (problem: Problem, solution: string): Promise<Partial<AIReview> & { model?: string }> => {
       const settings = await getSettings();
       if (!settings.aiApiKey.trim()) {
@@ -366,7 +409,8 @@ export const api = {
         }),
       });
       if (!response.ok) {
-        throw new Error(`AI request failed (${response.status})`);
+        const details = await readApiError(response, response.statusText || "Unknown error");
+        throw new Error(`AI request failed (${response.status}): ${details}`);
       }
       const payload = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
       const content = payload.choices?.[0]?.message?.content;

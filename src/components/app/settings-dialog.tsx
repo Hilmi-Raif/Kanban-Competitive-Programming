@@ -11,6 +11,7 @@ import { Modal } from "@/components/ui/modal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DEFAULT_SETTINGS, getSettings, saveSettings } from "@/lib/settings";
+import { api } from "@/lib/api-client";
 import type { AIProvider, AppSettings } from "@/lib/types";
 
 interface SettingsDialogProps {
@@ -22,6 +23,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [repos, setRepos] = useState<string[]>([]);
+  const [checkingAi, setCheckingAi] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(false);
 
   const loadRepos = async (token: string, options: { notify?: boolean } = {}) => {
@@ -100,6 +102,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     }
   };
 
+  const checkAiConnection = async () => {
+    setCheckingAi(true);
+    try {
+      const result = await api.ai.check(settings);
+      toast.success(`BYOK API verified successfully with ${result.model}`);
+    } catch (error) {
+      console.error("Failed to verify BYOK AI API", error);
+      toast.error(error instanceof Error ? error.message : "Failed to verify BYOK AI API");
+    } finally {
+      setCheckingAi(false);
+    }
+  };
+
   return (
     <Modal
       open={open}
@@ -144,7 +159,19 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             </div>
             <div className="grid gap-2">
               <Label>API Key</Label>
-              <Input type="password" value={settings.aiApiKey} onChange={(event) => update("aiApiKey", event.target.value)} placeholder="sk-..." />
+              <div className="flex gap-2">
+                <Input type="password" value={settings.aiApiKey} onChange={(event) => update("aiApiKey", event.target.value)} placeholder="sk-..." className="flex-1" />
+                <IconButton
+                  type="button"
+                  size="xl"
+                  onClick={() => void checkAiConnection()}
+                  disabled={checkingAi || !settings.aiApiKey.trim() || !settings.aiBaseUrl.trim() || !settings.aiModel.trim()}
+                  tooltip="Check API"
+                  className="shrink-0"
+                >
+                  {checkingAi ? <Loader2 className="animate-spin" /> : <Check />}
+                </IconButton>
+              </div>
             </div>
           </section>
 
