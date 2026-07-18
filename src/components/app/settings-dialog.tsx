@@ -24,7 +24,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [repos, setRepos] = useState<string[]>([]);
   const [loadingRepos, setLoadingRepos] = useState(false);
 
-  const loadRepos = async (token: string) => {
+  const loadRepos = async (token: string, options: { notify?: boolean } = {}) => {
     if (!token.trim()) {
       setRepos([]);
       return;
@@ -54,14 +54,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       if (Array.isArray(data)) {
         const urls = data.map((repo) => repo.html_url);
         setRepos(urls);
-        toast.success("Token verified and repositories loaded successfully!");
+        if (options.notify) {
+          toast.success("Token verified and repositories loaded successfully!");
+        }
       } else {
         throw new Error("Invalid response format from GitHub");
       }
     } catch (error) {
       console.error("Failed to fetch GitHub repos", error);
       const errMsg = error instanceof Error ? error.message : "Failed to load repositories";
-      toast.error(errMsg);
+      if (options.notify) {
+        toast.error(errMsg);
+      }
       setRepos([]);
     } finally {
       setLoadingRepos(false);
@@ -173,7 +177,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <IconButton
                   type="button"
                   size="xl"
-                  onClick={() => void loadRepos(settings.githubToken)}
+                  onClick={() => void loadRepos(settings.githubToken, { notify: true })}
                   disabled={loadingRepos || !settings.githubToken.trim()}
                   tooltip="Check Token"
                   className="shrink-0"
